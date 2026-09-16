@@ -1,0 +1,37 @@
+name: CloudOps Deployment Pipeline
+
+# Trigger this pipeline automatically every time code is pushed to the main branch
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v3
+
+      - name: Deploy Application Code to AWS EC2 via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: '3.6.117.119' # Your permanent static Elastic IP address
+          username: 'ubuntu'
+          key: ${{ secrets.EC2_SSH_KEY }} # Secure hidden access token key
+          script: |
+            cd /home/ubuntu
+            
+            # Create app.py cleanly from the pipeline contents
+            cat << 'EOF' > app.py
+            ${{ secrets.APP_PY_CODE }}
+            EOF
+            
+            # Inject your cloud database variables safely
+            export DB_HOST="://amazonaws.com"
+            
+            # Refresh system dependencies and clear execution layers
+            pip3 install flask flask-cors psycopg2-binary --break-system-packages --quiet
+            
+            # Safely cycle the active application processes running on port 5000
+            sudo fuser -k 5000/tcp || true
+            nohup python3 app.py > /dev/null 2>&1 &
