@@ -27,7 +27,8 @@ jobs:
             EOF
             
             # Inject your cloud database variables safely
-            export DB_HOST="://amazonaws.com"
+            export DB_HOST="terraform-20260915171204112700000003.czukm220enkc.ap-south-1.rds.amazonaws.com"
+            export DB_PASSWORD="${{ secrets.RDS_password }}"
             
             # Refresh system dependencies and clear execution layers
             pip3 install flask flask-cors psycopg2-binary --break-system-packages --quiet
